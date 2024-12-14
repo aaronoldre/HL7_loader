@@ -6,10 +6,9 @@ from snowflake.snowpark.context import get_active_session
 # Write directly to the app
 st.title(":open_file_folder: HL7 Data Loader :floppy_disk: ")
 st.write(
-    """Replace this example with your own code!
-    **And if you're new to Streamlit,** check
-    out our easy-to-follow guides at
-    [docs.streamlit.io](https://docs.streamlit.io).
+    """Copy and Paste 'D-' numbers from .csv output from the completeness report 
+\n
+    https://tableau.dna.corp.adaptivebiotech.com/#/views/ClinicalCompletenessReport/OrdersnotinQuadaxDetail?:iid=1
     """
 )
 
@@ -39,17 +38,48 @@ def string_to_rows(df, column_name):
 #     st.write("Uploaded Data: ")
 #     st.write(df)
 
+
+# enter d-numbers
+
 orders = st.text_area("Enter Orders Here: ")
 
-st.write(orders)
+if orders:
+    st.write(orders)
 
+# give user a chance to verify data
 
-
+# rerun OMG data
+# vw_omg_order_list
 
 # Create a DataFrame
-df = pd.DataFrame({'ORDER_NUMBER': [orders]})
+# df = pd.DataFrame({'ORDER_NUMBER': [orders]})
 
-# Convert items in the 'col1' column to separate rows
-df = string_to_rows(df, 'ORDER_NUMBER')
+# # Convert items in the 'col1' column to separate rows
+# df = string_to_rows(df, 'ORDER_NUMBER')
 
-st.write(df)
+# st.write(df)
+    # format the string of orders to something that will work in SQL query
+    formatted_orders = ", ".join(f"'{order.strip()}'" for order in orders.split(","))
+
+    # add orders to query
+    query = f"""select ord.orderdimkey
+    , ord.cora_order_id
+    , ord.order_number
+    , ord.order_name
+    , ord.cora_order_created_date_pt
+    , ord.order_status_type
+    , ord.order_billing_type
+    from modeled.edm.order_dim ord
+    where ord.order_number in ({formatted_orders});"""
+
+    # activate Snowflake Session
+    session = get_active_session()
+
+    # query db and output results to df
+    result = session.sql(query).to_pandas()
+
+    # write results to user to verify information
+    st.write(result)
+
+    # button for clicking to push changes through when ready
+    clicked = st.button("Click me")
