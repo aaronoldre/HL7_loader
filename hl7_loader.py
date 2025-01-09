@@ -34,8 +34,10 @@ def generate_bulk_insert_statement(df, table_name):
 
     # Create the VALUES portion of the SQL statement
     values = ", ".join(
-        f"('{row['Order Number']}', '{row['Missing Charges?']}')"
-        for _, row in df.iterrows()
+        f"('{row['Order Number']}', 'Missing DFT'), ('{row['Order Number']}', 'Missing OMG')"
+        if row['Missing Charges?'] == 'Missing OMG and DFT' 
+        else f"('{row['Order Number']}', '{row['Missing Charges?']}')"
+        for _, row in df.iterrows()  
     )
 
     # Build the complete SQL INSERT statement
