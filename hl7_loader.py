@@ -33,10 +33,12 @@ def generate_bulk_insert_statement(df, table_name):
     target_columns = ['order_number', 'message_type']
 
     # Create the VALUES portion of the SQL statement
+    # Values need to be truncated down to DFT and OMG
+    
     values = ", ".join(
-        f"('{row['Order Number']}', 'Missing DFT'), ('{row['Order Number']}', 'Missing OMG')"
+        f"('{row['Order Number']}', 'DFT'), ('{row['Order Number']}', 'OMG')"
         if row['Missing Charges?'] == 'Missing OMG and DFT' 
-        else f"('{row['Order Number']}', '{row['Missing Charges?']}')"
+        else f"('{row['Order Number'].strip()}', '{row['Missing Charges?'].replace('Missing ','')}')"
         for _, row in df.iterrows()  
     )
 
